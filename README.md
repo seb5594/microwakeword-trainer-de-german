@@ -8,10 +8,10 @@ Train a German microWakeWord model in Google Colab without typing phonetic symbo
 
 1. Open `notebooks/train_german_wakeword.ipynb` in [Google Colab](https://colab.research.google.com/) using **File → Upload notebook**, or open the notebook from this repository.
 2. Choose **Runtime → Change runtime type → A100 GPU** and enable **High-RAM** when available. The original trainer uses considerable memory; other runtimes have not been validated here.
-3. Enter your wake word in the first form cell. Example: `Ey Sebastian`, `Kosta`, `Koschta`, `Okay Kosta`, `Juii Scheiße`, or another short German word or phrase. Optionally fill `SPOKEN_TEXT` if Piper should read a different spelling, and `SIMILAR_WORDS` with comma-separated phrases that should **not** trigger the model (for example `Kostas, Kosten, Koscha`).
+3. Enter your wake word in the first form cell. Example: `Ey Sebastian`, `Kosta`, `Koschta`, `Okay Kosta`, or another short German word or phrase. Optionally fill `SPOKEN_TEXT` if Piper should read a different spelling, and `SIMILAR_WORDS` with comma-separated phrases that should **not** trigger the model (for example `Kostas, Kosten, Koscha`).
 4. In that first form, tick the voices you want to audition. Thorsten, Pavoque, and Ramona are ticked by default. Run the cells **through the pronunciation previews**, including the setup and Drive access cells, and listen to every preview.
 5. In the **second form**, tick only voices that you auditioned and that say your word correctly. Voices newly enabled in the first form must also be explicitly ticked in this second form if you want to train with them. Run this cell and enter `JA` when the listed voices are correct. At least one voice is required.
-6. Run the remaining cells for sample generation and training. The `<name>.tflite` model and `<name>.json` manifest are saved in `MyDrive/wakeword_training_de_<name>/`.
+6. Run the remaining cells for sample generation and training. The `<name>.tflite` model and `<name>.json` manifest are saved in `MyDrive/wakeword_training_german/<name>/`.
 
 Only the model pair is saved to Drive automatically. The generated WAVs, downloaded datasets, and caches reside in the temporary Colab VM. Your local machine does not train or store the datasets. The first run can take substantial time and several gigabytes of Colab storage; it depends on your Colab runtime and dataset download speeds.
 

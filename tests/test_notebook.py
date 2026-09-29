@@ -50,6 +50,7 @@ class NotebookTests(unittest.TestCase):
             scope = {}
             exec(lines, scope)
             self.assertEqual(scope['OUTPUT_NAME'], expected)
+            self.assertEqual(scope['DRIVE_FOLDER'], f'wakeword_training_german/{expected}')
             self.assertEqual(scope['SPOKEN_TEXT'], word)
             self.assertFalse(any(scope['contains_target'](phrase)
                                  for phrase in scope['CONFUSABLE_PHRASES']))

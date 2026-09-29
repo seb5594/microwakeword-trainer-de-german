@@ -8,10 +8,10 @@ Mit diesem Google-Colab-Notebook trainierst du ein deutsches microWakeWord-Model
 
 1. Öffne `notebooks/train_german_wakeword.ipynb` in [Google Colab](https://colab.research.google.com/) über **Datei → Notebook hochladen** oder direkt aus diesem GitHub-Repository.
 2. Wähle unter **Laufzeit → Laufzeittyp ändern** eine **A100 GPU** und nach Möglichkeit **hohen RAM**. Der zugrunde liegende Trainer benötigt viel Speicher; andere Laufzeiten wurden hier nicht vollständig geprüft.
-3. Trage in der ersten Formularzelle dein `WAKE_WORD` ein, zum Beispiel `Ey Sebastian`, `Kosta`, `Koschta`, `Okay Kosta`, `Juii Scheiße` oder ein anderes kurzes deutsches Wort. Optional: `SPOKEN_TEXT` ist eine andere Schreibweise nur für die Sprachausgabe. In `SIMILAR_WORDS` kannst du mit Kommas getrennte Wörter eintragen, die das Modell **nicht** aktivieren sollen, etwa `Kostas, Kosten, Koscha`.
+3. Trage in der ersten Formularzelle dein `WAKE_WORD` ein, zum Beispiel `Ey Sebastian`, `Kosta`, `Koschta`, `Okay Kosta` oder ein anderes kurzes deutsches Wort. Optional: `SPOKEN_TEXT` ist eine andere Schreibweise nur für die Sprachausgabe. In `SIMILAR_WORDS` kannst du mit Kommas getrennte Wörter eintragen, die das Modell **nicht** aktivieren sollen, etwa `Kostas, Kosten, Koscha`.
 4. Markiere im **ersten Formular** die Stimmen, von denen du Hörproben haben möchtest. Thorsten, Pavoque und Ramona sind voreingestellt. Führe die Zellen **bis einschließlich der Hörproben** aus und verbinde dabei Google Drive. Höre dir alle Proben an.
 5. Markiere im **zweiten Formular** nur die zuvor angehörten Stimmen, die dein Wort richtig aussprechen. Neu ausgewählte Stimmen müssen dort nochmals ausdrücklich angehakt werden. Führe diese Zelle aus und bestätige die angezeigten Stimmen mit `JA`. Mindestens eine Stimme muss ausgewählt bleiben.
-6. Führe anschließend die restlichen Zellen für Datenerzeugung und Training aus. Danach findest du `<name>.tflite` und `<name>.json` in `MyDrive/wakeword_training_de_<name>/`.
+6. Führe anschließend die restlichen Zellen für Datenerzeugung und Training aus. Danach findest du `<name>.tflite` und `<name>.json` in `MyDrive/wakeword_training_german/<name>/`.
 
 Das Notebook speichert automatisch nur die beiden fertigen Modelldateien in Drive. WAV-Dateien, Zwischenergebnisse und große Hintergrund-Datensätze liegen in der temporären Colab-VM. Dein PC muss sie nicht speichern und trainiert nichts. Ein Durchlauf kann lange dauern und mehrere Gigabyte Speicher in Colab benötigen.
 
