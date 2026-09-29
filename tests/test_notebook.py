@@ -140,6 +140,31 @@ class NotebookTests(unittest.TestCase):
                                   for cmd in negative_commands},
                                  {'thorsten', 'pavoque', 'ramona'})
 
+    def test_export_keeps_only_model_pair_in_drive(self):
+        scope = {}
+        exec(source(1), scope)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            trained = (root / 'trained_models' / 'ey_sebastian' /
+                       'tflite_stream_state_internal_quant')
+            trained.mkdir(parents=True)
+            (trained / 'stream_state_internal_quant.tflite').write_bytes(b'model')
+            drive_dir = root / 'drive' / scope['DRIVE_FOLDER']
+            drive_dir.mkdir(parents=True)
+            (drive_dir / '_run_finished.txt').write_text('old run', encoding='utf-8')
+            scope['DRIVE_DIR'] = str(drive_dir)
+            previous_dir = os.getcwd()
+            try:
+                os.chdir(root)
+                exec(source(14), scope)
+            finally:
+                os.chdir(previous_dir)
+            self.assertEqual({file.name for file in drive_dir.iterdir()},
+                             {'ey_sebastian.tflite', 'ey_sebastian.json'})
+            manifest = json.loads((drive_dir / 'ey_sebastian.json').read_text(encoding='utf-8'))
+            self.assertEqual(manifest['website'],
+                             'https://github.com/seb5594/microwakeword-trainer-de-german')
+
     def test_no_active_pronunciation_notation(self):
         cells = json.loads(NOTEBOOK.read_text(encoding='utf-8'))['cells']
         active = '\n'.join(line for cell in cells if cell['cell_type'] == 'code'
