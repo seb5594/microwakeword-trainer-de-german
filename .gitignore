@@ -1,0 +1,10 @@
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+*.pyc
+*.wav
+*.tflite
+negative_datasets/
+generated_samples/
+generated_augmented_features/
+trained_models/

@@ -2,20 +2,20 @@
 
 [English guide](README.md) · [Notebook öffnen](notebooks/train_german_wakeword.ipynb)
 
-Mit diesem Google-Colab-Notebook trainierst du ein deutsches microWakeWord-Modell, ohne Lautschrift einzugeben und ohne die Trainingsdaten auf deinem PC zu speichern. Es basiert auf [alfiedennen/microwakeword-trainer](https://github.com/alfiedennen/microwakeword-trainer) und verwendet [OHF-Voice/micro-wake-word](https://github.com/OHF-Voice/micro-wake-word). Die deutschen Piper-Stimmen Thorsten, Pavoque und Ramona erzeugen die Sprachbeispiele.
+Mit diesem Google-Colab-Notebook trainierst du ein deutsches microWakeWord-Modell, ohne Lautschrift einzugeben und ohne die Trainingsdaten auf deinem PC zu speichern. Es basiert auf [alfiedennen/microwakeword-trainer](https://github.com/alfiedennen/microwakeword-trainer) und verwendet [OHF-Voice/micro-wake-word](https://github.com/OHF-Voice/micro-wake-word). Für Hörproben und Training stehen sechs deutsche Piper-Stimmmodelle zur Auswahl.
 
 ## Schnellstart
 
-1. Öffne `notebooks/train_german_wakeword.ipynb` in [Google Colab](https://colab.research.google.com/) über **Datei → Notebook hochladen** oder nach Veröffentlichung über das GitHub-Repository.
+1. Öffne `notebooks/train_german_wakeword.ipynb` in [Google Colab](https://colab.research.google.com/) über **Datei → Notebook hochladen** oder direkt aus diesem GitHub-Repository.
 2. Wähle unter **Laufzeit → Laufzeittyp ändern** eine **A100 GPU** und nach Möglichkeit **hohen RAM**. Der zugrunde liegende Trainer benötigt viel Speicher; andere Laufzeiten wurden hier nicht vollständig geprüft.
-3. Trage in der ersten Zelle dein `WAKE_WORD` ein, zum Beispiel `Ey Sebastian`, `Kosta`, `Koschta`, `Okay Kosta`, `Juii Scheiße` oder ein anderes kurzes deutsches Wort.
-4. Optional: `SPOKEN_TEXT` ist eine andere Schreibweise nur für die Sprachausgabe. In `SIMILAR_WORDS` kannst du mit Kommas getrennte Wörter eintragen, die das Modell **nicht** aktivieren sollen, etwa `Kostas, Kosten, Koscha`.
-5. Starte **Laufzeit → Alle ausführen** und verbinde Google Drive. Höre die drei Vorschauen an. Gib `JA` nur ein, wenn **alle drei** Stimmen das Wort richtig aussprechen.
-6. Nach der Datenerzeugung und dem Training findest du `<name>.tflite` und `<name>.json` in `MyDrive/wakeword_training_de_<name>/`.
+3. Trage in der ersten Formularzelle dein `WAKE_WORD` ein, zum Beispiel `Ey Sebastian`, `Kosta`, `Koschta`, `Okay Kosta`, `Juii Scheiße` oder ein anderes kurzes deutsches Wort. Optional: `SPOKEN_TEXT` ist eine andere Schreibweise nur für die Sprachausgabe. In `SIMILAR_WORDS` kannst du mit Kommas getrennte Wörter eintragen, die das Modell **nicht** aktivieren sollen, etwa `Kostas, Kosten, Koscha`.
+4. Markiere im **ersten Formular** die Stimmen, von denen du Hörproben haben möchtest. Thorsten, Pavoque und Ramona sind voreingestellt. Führe die Zellen **bis einschließlich der Hörproben** aus und verbinde dabei Google Drive. Höre dir alle Proben an.
+5. Markiere im **zweiten Formular** nur die zuvor angehörten Stimmen, die dein Wort richtig aussprechen. Neu ausgewählte Stimmen müssen dort nochmals ausdrücklich angehakt werden. Führe diese Zelle aus und bestätige die angezeigten Stimmen mit `JA`. Mindestens eine Stimme muss ausgewählt bleiben.
+6. Führe anschließend die restlichen Zellen für Datenerzeugung und Training aus. Danach findest du `<name>.tflite` und `<name>.json` in `MyDrive/wakeword_training_de_<name>/`.
 
 Das Notebook speichert automatisch nur die beiden fertigen Modelldateien in Drive. WAV-Dateien, Zwischenergebnisse und große Hintergrund-Datensätze liegen in der temporären Colab-VM. Dein PC muss sie nicht speichern und trainiert nichts. Ein Durchlauf kann lange dauern und mehrere Gigabyte Speicher in Colab benötigen.
 
-## Die drei Eingaben
+## Texteingaben
 
 | Feld | Pflicht | Zweck |
 | --- | --- | --- |
@@ -27,9 +27,22 @@ Andere übliche Assistenten-Rufwörter werden automatisch als Gegenbeispiele erg
 
 ## Aussprache und Stimmen
 
-Piper erhält normalen deutschen Text, auch mit Umlauten und `ß`. Die Beispiele stammen von Thorsten (8.000), Pavoque (6.000) und Ramona (6.000). MLS und Kerstin sind nicht enthalten. Die negativen Beispiele verwenden abwechselnd diese drei Stimmen. Klingt eine Vorschau falsch, bestätige sie **nicht**; ändere `SPOKEN_TEXT` oder wähle ein anderes Wakeword.
+Piper erhält normalen deutschen Text, auch mit Umlauten und `ß`. Für jede ausgewählte Stimme wird folgende Anzahl positiver Beispiele erzeugt:
 
-Bei Änderungen an Eingaben legt das Notebook automatisch einen neuen Arbeitsordner an. So werden keine WAV-Dateien eines anderen Wortes oder einer alten Aussprache übernommen. Ein erneuter erfolgreicher Durchlauf mit demselben Wakeword kann die Modelldateien gleichen Namens in Drive überschreiben. Sichere Versionen zum Vergleichen separat.
+| Stimme | Piper-Modell | Positive Beispiele | Anfangs für Vorschau/Training markiert |
+| --- | --- | ---: | --- |
+| Thorsten | `de_DE-thorsten-medium` | 8.000 | Ja |
+| Pavoque | `de_DE-pavoque-low` | 6.000 | Ja |
+| Ramona | `de_DE-ramona-low` | 6.000 | Ja |
+| Karlsson | `de_DE-karlsson-low` | 6.000 | Nein |
+| Eva K | `de_DE-eva_k-x_low` | 6.000 | Nein |
+| Thorsten Emotional | `de_DE-thorsten_emotional-medium` | 4.000 | Nein |
+
+Voreingestellt sind 20.000 positive Beispiele; mit allen sechs Modellen sind es 36.000. Bei Eva K heißt die Qualitätsstufe **x_low**; `eva_k/low` ist dafür kein gültiger Pfad. Das emotionale Thorsten-Modell hat acht Sprechstile, darunter Flüstern und Betrunkensein. Du kannst alle acht anhören; es sind keine acht unabhängigen Sprecher. Falls eine Stimme oder einer ihrer Stile falsch klingt, entferne die gesamte Stimme im zweiten Formular. Alternativ kannst du `SPOKEN_TEXT` ändern und das erste Formular samt Vorschauen erneut ausführen. Die Gegenbeispiele verwenden abwechselnd die endgültig gewählten Stimmen. MLS und Kerstin sind nicht enthalten.
+
+Mehr unterschiedliche und überzeugende Stimmen können helfen. Mehr künstliche Beispiele allein garantieren aber keine bessere Erkennung. Jede zusätzliche Stimme benötigt Zeit und Speicherplatz in Colab. Ob die Auswahl wirklich besser ist, lässt sich erst mit echten Sprechern prüfen.
+
+Bei Änderungen am Wort, gesprochenen Text, den Gegenbeispielen oder der endgültigen Stimmauswahl legt das Notebook automatisch einen neuen Arbeitsordner an. So werden keine WAV-Dateien eines anderen Wortes oder einer alten Aussprache übernommen. Ein erneuter erfolgreicher Durchlauf mit demselben Wakeword kann die Modelldateien gleichen Namens in Drive überschreiben. Sichere Versionen zum Vergleichen separat.
 
 ## Modell verwenden
 

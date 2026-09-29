@@ -1,6 +1,7 @@
 """Local smoke tests for the Colab notebook without downloading models."""
 
 import json
+import os
 import re
 import tempfile
 import unittest
@@ -14,6 +15,20 @@ NOTEBOOK = Path(__file__).resolve().parents[1] / 'notebooks' / 'train_german_wak
 def source(index):
     cells = json.loads(NOTEBOOK.read_text(encoding='utf-8'))['cells']
     return ''.join(cells[index]['source'])
+
+
+def select_voices(scope, changes=None):
+    code = source(6)
+    for name, enabled in (changes or {}).items():
+        original = f'KEEP_{name.upper()} = False  # @param'
+        if original not in code:
+            original = f'KEEP_{name.upper()} = True  # @param'
+        assert original in code
+        code = code.replace(original, f'KEEP_{name.upper()} = {enabled}  # @param')
+    scope['os'] = os
+    scope['input'] = lambda prompt: 'JA'
+    with patch('os.makedirs'), patch('os.chdir'):
+        exec(code, scope)
 
 
 class NotebookTests(unittest.TestCase):
@@ -38,6 +53,7 @@ class NotebookTests(unittest.TestCase):
             self.assertEqual(scope['SPOKEN_TEXT'], word)
             self.assertFalse(any(scope['contains_target'](phrase)
                                  for phrase in scope['CONFUSABLE_PHRASES']))
+            select_voices(scope)
             self.assertEqual(sum(scope['VOICE_SAMPLE_COUNTS'].values()), 20000)
             self.assertEqual(set(scope['VOICE_SPECS']), set(scope['VOICE_SAMPLE_COUNTS']))
             self.assertIn(expected, scope['WORK_DIR'])
@@ -50,6 +66,7 @@ class NotebookTests(unittest.TestCase):
                                   'SIMILAR_WORDS = "Kostas, Okay Kosta, Kosten"  # @param')
         scope = {}
         exec(custom, scope)
+        select_voices(scope)
         self.assertEqual(scope['SPOKEN_TEXT'], 'Koschta')
         self.assertIn('Kostas', scope['CONFUSABLE_PHRASES'])
         self.assertIn('Kosten', scope['CONFUSABLE_PHRASES'])
@@ -57,11 +74,34 @@ class NotebookTests(unittest.TestCase):
 
         default = {}
         exec(settings, default)
+        select_voices(default)
         self.assertNotEqual(default['WORK_DIR'], scope['WORK_DIR'])
+
+    def test_optional_voices_and_post_preview_selection(self):
+        code = source(1)
+        for name in ('KARLSSON', 'EVA_K', 'THORSTEN_EMOTIONAL'):
+            code = code.replace(f'PREVIEW_{name} = False  # @param',
+                                f'PREVIEW_{name} = True  # @param')
+        scope = {}
+        exec(code, scope)
+        self.assertEqual(len(scope['VOICE_SPECS']), 6)
+        self.assertEqual(scope['VOICE_SPECS']['eva_k'],
+                         'eva_k/x_low/de_DE-eva_k-x_low')
+        select_voices(scope, {'PAVOQUE': 'False', 'KARLSSON': 'True',
+                              'EVA_K': 'True', 'THORSTEN_EMOTIONAL': 'True'})
+        self.assertEqual(set(scope['VOICE_SAMPLE_COUNTS']),
+                         {'thorsten', 'ramona', 'karlsson', 'eva_k', 'thorsten_emotional'})
+        self.assertEqual(sum(scope['VOICE_SAMPLE_COUNTS'].values()), 30000)
+
+        not_previewed = {}
+        exec(source(1), not_previewed)
+        with self.assertRaisesRegex(AssertionError, 'Preview these voices first'):
+            select_voices(not_previewed, {'EVA_K': 'True'})
 
     def test_generation_uses_text_and_approved_voices(self):
         settings = {}
         exec(source(1), settings)
+        select_voices(settings)
         with tempfile.TemporaryDirectory() as directory:
             work_dir = Path(directory)
             settings['WORK_DIR'] = str(work_dir)
@@ -84,7 +124,7 @@ class NotebookTests(unittest.TestCase):
                         (output / f'{i}.wav').write_bytes(b'RIFF')
 
             with patch('subprocess.run', FakeProcess.run):
-                exec(source(6), settings)
+                exec(source(7), settings)
                 positive_commands = FakeProcess.commands[:]
                 self.assertEqual(len(positive_commands), 3)
                 self.assertTrue(all(cmd[3] == 'Ey Sebastian' for cmd in positive_commands))
@@ -92,7 +132,7 @@ class NotebookTests(unittest.TestCase):
                                   for cmd in positive_commands},
                                  {'thorsten', 'pavoque', 'ramona'})
 
-                exec(source(7), settings)
+                exec(source(8), settings)
                 negative_commands = FakeProcess.commands[len(positive_commands):]
                 self.assertEqual(len(negative_commands), len(settings['CONFUSABLE_PHRASES']))
                 self.assertEqual({Path(cmd[cmd.index('--model') + 1]).stem

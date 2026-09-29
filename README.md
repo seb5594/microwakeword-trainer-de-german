@@ -2,20 +2,20 @@
 
 [Deutsche Anleitung](README.de.md) · [Open notebook](notebooks/train_german_wakeword.ipynb)
 
-Train a German microWakeWord model in Google Colab without typing phonetic symbols or storing the training dataset on your computer. This is a text-driven adaptation of [alfiedennen/microwakeword-trainer](https://github.com/alfiedennen/microwakeword-trainer), built on [OHF-Voice/micro-wake-word](https://github.com/OHF-Voice/micro-wake-word). The notebook generates samples with the official German Piper voices Thorsten, Pavoque, and Ramona.
+Train a German microWakeWord model in Google Colab without typing phonetic symbols or storing the training dataset on your computer. This is a text-driven adaptation of [alfiedennen/microwakeword-trainer](https://github.com/alfiedennen/microwakeword-trainer), built on [OHF-Voice/micro-wake-word](https://github.com/OHF-Voice/micro-wake-word). The notebook offers six German Piper voice models; you choose which ones to audition and which ones to use for training.
 
 ## Quick start
 
-1. Open `notebooks/train_german_wakeword.ipynb` in [Google Colab](https://colab.research.google.com/) using **File → Upload notebook**, or open the notebook from this repository after it is published.
+1. Open `notebooks/train_german_wakeword.ipynb` in [Google Colab](https://colab.research.google.com/) using **File → Upload notebook**, or open the notebook from this repository.
 2. Choose **Runtime → Change runtime type → A100 GPU** and enable **High-RAM** when available. The original trainer uses considerable memory; other runtimes have not been validated here.
-3. Enter your wake word in the first form cell. Example: `Ey Sebastian`, `Kosta`, `Koschta`, `Okay Kosta`, `Juii Scheiße`, or another short German word or phrase.
-4. Optionally fill `SPOKEN_TEXT` if Piper should read a different spelling, and `SIMILAR_WORDS` with comma-separated phrases that should **not** trigger the model (for example `Kostas, Kosten, Koscha`).
-5. Choose **Runtime → Run all**, grant access to your Google Drive, then listen to the three pronunciation previews. Type `JA` only if **each** voice says the intended wake word clearly.
-6. Wait for sample generation and training. The `<name>.tflite` model and `<name>.json` manifest are saved in `MyDrive/wakeword_training_de_<name>/`.
+3. Enter your wake word in the first form cell. Example: `Ey Sebastian`, `Kosta`, `Koschta`, `Okay Kosta`, `Juii Scheiße`, or another short German word or phrase. Optionally fill `SPOKEN_TEXT` if Piper should read a different spelling, and `SIMILAR_WORDS` with comma-separated phrases that should **not** trigger the model (for example `Kostas, Kosten, Koscha`).
+4. In that first form, tick the voices you want to audition. Thorsten, Pavoque, and Ramona are ticked by default. Run the cells **through the pronunciation previews**, including the setup and Drive access cells, and listen to every preview.
+5. In the **second form**, tick only voices that you auditioned and that say your word correctly. Voices newly enabled in the first form must also be explicitly ticked in this second form if you want to train with them. Run this cell and enter `JA` when the listed voices are correct. At least one voice is required.
+6. Run the remaining cells for sample generation and training. The `<name>.tflite` model and `<name>.json` manifest are saved in `MyDrive/wakeword_training_de_<name>/`.
 
 Only the model pair is saved to Drive automatically. The generated WAVs, downloaded datasets, and caches reside in the temporary Colab VM. Your local machine does not train or store the datasets. The first run can take substantial time and several gigabytes of Colab storage; it depends on your Colab runtime and dataset download speeds.
 
-## The three inputs
+## Text inputs
 
 | Input | Required | Meaning |
 | --- | --- | --- |
@@ -27,9 +27,22 @@ Common assistant phrases are added as negative examples automatically. A phrase 
 
 ## Pronunciation and voices
 
-Piper receives ordinary German text, including umlauts and `ß`. It uses its own German text conversion. No pronunciation notation is required. The 20,000 positive examples are generated from Thorsten (8,000), Pavoque (6,000), and Ramona (6,000). MLS and Kerstin are excluded. Negative examples rotate through the same three voices. If any voice pronounces your word incorrectly, stop at the preview and adjust `SPOKEN_TEXT` or choose another phrase; do not accept incorrect training audio.
+Piper receives ordinary German text, including umlauts and `ß`. It uses its own German text conversion. No pronunciation notation is required. Available voices and their positive sample counts when selected:
 
-Changing any input automatically creates a separate working directory, so previously generated WAVs cannot silently be reused. Finished model files with the same wake word name in Drive may be overwritten on a later successful run; keep your own copies if you want to compare revisions.
+| Voice checkbox | Piper model | Positive samples | Initially selected for preview/training |
+| --- | --- | ---: | --- |
+| Thorsten | `de_DE-thorsten-medium` | 8,000 | Yes |
+| Pavoque | `de_DE-pavoque-low` | 6,000 | Yes |
+| Ramona | `de_DE-ramona-low` | 6,000 | Yes |
+| Karlsson | `de_DE-karlsson-low` | 6,000 | No |
+| Eva K | `de_DE-eva_k-x_low` | 6,000 | No |
+| Thorsten Emotional | `de_DE-thorsten_emotional-medium` | 4,000 | No |
+
+The defaults generate 20,000 positive examples; selecting all six generates 36,000. The `eva_k` model is **x_low**; `eva_k/low` does not refer to this voice. The emotional model exposes eight speaking styles (including whisper and drunk) from Thorsten. Its eight previews let you check all styles; they are not eight independent speakers. If any selected voice or style sounds wrong, untick the entire voice in the second form. You can instead adjust `SPOKEN_TEXT` and rerun the first form and previews. Negative examples rotate through the final voice selection. MLS and Kerstin are excluded.
+
+More distinct, convincing voices can improve coverage, but simply increasing the number of synthetic samples is no guarantee of better detection. Extra voices also add generation time and disk use in Colab. Test the finished model with real speakers to judge whether the extra voices help.
+
+Changing the word, spoken text, negatives, or final voice selection creates a separate working directory, so previously generated WAVs cannot silently be reused. Finished model files with the same wake word name in Drive may be overwritten on a later successful run; keep your own copies if you want to compare revisions.
 
 ## Using the exported model
 
